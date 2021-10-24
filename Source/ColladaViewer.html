@@ -1,0 +1,59 @@
+<html>
+<body>
+ 
+<!-- user interface -->
+ 
+<div id="divMain">
+	<h3>Collada File Viewer</h3>
+	<p>Upload a file in Collada (.dae) format to view its contents.</p>
+	<input id="inputFileToLoad" type="file" onchange="inputFileToLoad_Changed(this);" />
+</div>
+ 
+<script src="Camera.js"></script>
+<script src="ColladaFile.js"></script>
+<script src="Coords.js"></script>
+<script src="DisplayHelper.js"></script>
+<script src="Edge.js"></script>
+<script src="Face.js"></script>
+<script src="Globals.js"></script>
+<script src="InputHelper.js"></script>
+<script src="Matrix.js"></script>
+<script src="Mesh.js"></script>
+<script src="Orientation.js"></script>
+<script src="Scene.js"></script>
+<script src="Transform.js"></script>
+<script src="Transform_Translate.js"></script>
+<script src="Vertex.js"></script>
+
+<script type="text/javascript">
+ 
+// ui events
+ 
+function inputFileToLoad_Changed(inputFileToLoad)
+{
+	var file = inputFileToLoad.files[0];
+	var fileReader = new FileReader();
+	fileReader.onload = inputFileToLoad_Changed_2;
+	fileReader.readAsText(file, "UTF-8");
+}
+ 
+function inputFileToLoad_Changed_2(event)
+{
+	var fileReader = event.target;
+	var fileContentsAsString = fileReader.result;
+ 
+	var scene = ColladaFile.sceneFromStringXML
+	(
+		fileContentsAsString
+	);
+ 
+	Globals.Instance.initialize
+	(
+		scene
+	);
+}
+   
+</script>
+ 
+</body>
+</html>

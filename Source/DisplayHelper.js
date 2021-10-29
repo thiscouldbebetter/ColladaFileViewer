@@ -101,7 +101,8 @@ class DisplayHelper
  
 		this.graphics = canvas.getContext("2d");
  
-		var divMain = document.getElementById("divMain");
-		divMain.appendChild(canvas);
+		var divOutput = document.getElementById("divOutput");
+		divOutput.innerHTML = "";
+		divOutput.appendChild(canvas);
 	}
 }

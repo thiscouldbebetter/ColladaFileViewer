@@ -315,68 +315,140 @@ class ColladaFile
  
 	static sceneFromStringXML_Meshes_Geometry_Faces(xmlElementGeometry)
 	{
-		var xmlElementForFaces = xmlElementGeometry.getElementsByTagName
-		(
-			"polylist"
-		)[0];
- 
-		var numberOfFaces = xmlElementForFaces.getAttribute("count");
- 
-		var xmlElementsInput = xmlElementForFaces.getElementsByTagName("input");
-		var numberOfInputs = xmlElementsInput.length;
-		var offsetOfVertexIndex = null;
- 
-		for (var i = 0; i < xmlElementsInput.length; i++)
+		var htmlCollectionToArray = (htmlCollection) =>
 		{
-			var xmlElementInput = xmlElementsInput[i];
-			var semantic = xmlElementInput.getAttribute("semantic");
-			if (semantic == "VERTEX")
-			{
-				offsetOfVertexIndex = parseInt
-				(
-					xmlElementInput.getAttribute("offset")
-				);
-			}
+			var htmlCollectionAsArray = [];
+			htmlCollectionAsArray.push(...htmlCollection);
+			return htmlCollectionAsArray;
+		};
+
+		var xmlElementMesh = xmlElementGeometry.getElementsByTagName
+		(
+			"mesh"
+		)[0];
+
+		var xmlElementVertices = xmlElementMesh.getElementsByTagName
+		(
+			"vertices"
+		)[0];
+
+		var xmlElementSourceVertexPositionsId = htmlCollectionToArray
+		(
+			xmlElementVertices.getElementsByTagName("input")
+		).filter
+		(
+			x => x.getAttribute("semantic") == "POSITION"
+		)[0].getAttribute
+		(
+			"source"
+		);
+
+		xmlElementSourceVertexPositionsId =
+			xmlElementSourceVertexPositionsId.substring(1);
+
+		var vertexCoordinates = htmlCollectionToArray
+		(
+			xmlElementMesh.getElementsByTagName
+			(
+				"source"
+			)
+		).filter
+		(
+			x => x.id == xmlElementSourceVertexPositionsId
+		)[0].getElementsByTagName
+		(
+			"float_array"
+		)[0].innerHTML.split(" ").map
+		(
+			x => parseFloat(x)
+		);
+ 
+		var vertexPositions = [];
+		var numberOfDimensions = 3;
+		for (var i = 0; i < vertexCoordinates.length; i += numberOfDimensions)
+		{
+			var vertexPos = new Coords
+			(
+				vertexCoordinates[i],
+				vertexCoordinates[i + 1],
+				vertexCoordinates[i + 2]
+			);
+
+			vertexPositions.push(vertexPos);
 		}
- 
-		var faceVertexCounts = xmlElementForFaces.getElementsByTagName
+
+		var xmlElementTriangles = xmlElementMesh.getElementsByTagName
 		(
-			"vcount"
-		)[0].innerHTML.split(" ");
- 
-		var faceVertexIndices = xmlElementForFaces.getElementsByTagName
+			"triangles"
+		)[0];
+
+		var xmlElementTrianglesInputs =
+			htmlCollectionToArray
+			(
+				xmlElementTriangles.getElementsByTagName
+				(
+					"input"
+				)
+			);
+
+		var numberOfInterleavedDataStreams =
+			xmlElementTrianglesInputs.length;
+
+		var offsetOfDataStreamForFaceVertexIndices = parseInt
 		(
-			"p"
-		)[0].innerHTML.split(" ");
- 
+			xmlElementTrianglesInputs.filter
+			(
+				x => x.getAttribute("semantic") == "VERTEX"
+			)[0].getAttribute
+			(
+				"offset"
+			)
+		);
+
+		var dataStreamsForTrianglesInterleaved =
+			xmlElementTriangles.getElementsByTagName
+			(
+				"p"
+			)[0].innerHTML.split(" ").map
+			(
+				x => parseInt(x)
+			);
+
+		var verticesPerTriangle = 3;
+		var numberOfDataPoints = dataStreamsForTrianglesInterleaved.length;
+		var numberOfTriangles =
+			numberOfDataPoints
+			/ numberOfInterleavedDataStreams
+			/ verticesPerTriangle;
+
 		var vertexIndicesForFaces = [];
-		var vertexIndexOffsetForFace = 0;
- 
-		for (var f = 0; f < numberOfFaces; f++)
+
+		for (var t = 0; t < numberOfTriangles; t++)
 		{
 			var vertexIndicesForFace = [];
- 
-			var numberOfVerticesInFace = faceVertexCounts[f];
- 
-			for (var vi = 0; vi < numberOfVerticesInFace; vi++)
+
+			var triangleVertexIndex0Index =
+				t
+				* verticesPerTriangle
+				* numberOfInterleavedDataStreams
+				+ offsetOfDataStreamForFaceVertexIndices;
+
+			for (var d = 0; d < verticesPerTriangle; d++)
 			{
-				var viAdjusted =
-					vi * numberOfInputs
-					+ offsetOfVertexIndex
-					+ vertexIndexOffsetForFace;
- 
-				var vertexIndex = faceVertexIndices[viAdjusted];
- 
+				var vertexIndexIndex =
+					triangleVertexIndex0Index
+					+ d * numberOfInterleavedDataStreams;
+
+				var vertexIndex =
+					dataStreamsForTrianglesInterleaved[vertexIndexIndex];
+
 				vertexIndicesForFace.push(vertexIndex);
 			}
- 
+
 			vertexIndicesForFaces.push(vertexIndicesForFace);
- 
-			vertexIndexOffsetForFace +=
-				numberOfVerticesInFace * numberOfInputs;
 		}
- 
+
 		return vertexIndicesForFaces;
- 
 	}
+
 }

@@ -1,6 +1,13 @@
 
 class ColladaFile
 {
+	static htmlCollectionToArray(htmlCollection)
+	{
+		var htmlCollectionAsArray = [];
+		htmlCollectionAsArray.push(...htmlCollection);
+		return htmlCollectionAsArray;
+	}
+
 	static sceneFromStringXML(colladaFileAsStringXML)
 	{
 		var parser = new DOMParser();
@@ -32,7 +39,7 @@ class ColladaFile
 		(
 			xmlElementRoot,
 			xmlElementVisualScene
-		);	  
+		);
  
 		var scene = new Scene(camera, meshes);
  
@@ -83,9 +90,9 @@ class ColladaFile
 			Math.cos(widthOfViewInRadiansHalf)
 			* cameraViewSize.x / 2;
  
-		var xmlElementsVisualSceneNode = xmlElementVisualScene.getElementsByTagName
+		var xmlElementsVisualSceneNode = ColladaFile.htmlCollectionToArray
 		(
-			"node"
+			xmlElementVisualScene.getElementsByTagName("node")
 		);
  
 		var xmlElementCamera = null;
@@ -315,13 +322,6 @@ class ColladaFile
  
 	static sceneFromStringXML_Meshes_Geometry_Faces(xmlElementGeometry)
 	{
-		var htmlCollectionToArray = (htmlCollection) =>
-		{
-			var htmlCollectionAsArray = [];
-			htmlCollectionAsArray.push(...htmlCollection);
-			return htmlCollectionAsArray;
-		};
-
 		var xmlElementMesh = xmlElementGeometry.getElementsByTagName
 		(
 			"mesh"
@@ -332,7 +332,7 @@ class ColladaFile
 			"vertices"
 		)[0];
 
-		var xmlElementSourceVertexPositionsId = htmlCollectionToArray
+		var xmlElementSourceVertexPositionsId = ColladaFile.htmlCollectionToArray
 		(
 			xmlElementVertices.getElementsByTagName("input")
 		).filter
@@ -346,7 +346,7 @@ class ColladaFile
 		xmlElementSourceVertexPositionsId =
 			xmlElementSourceVertexPositionsId.substring(1);
 
-		var vertexCoordinates = htmlCollectionToArray
+		var vertexCoordinates = ColladaFile.htmlCollectionToArray
 		(
 			xmlElementMesh.getElementsByTagName
 			(
@@ -383,7 +383,7 @@ class ColladaFile
 		)[0];
 
 		var xmlElementTrianglesInputs =
-			htmlCollectionToArray
+			ColladaFile.htmlCollectionToArray
 			(
 				xmlElementTriangles.getElementsByTagName
 				(
@@ -451,4 +451,59 @@ class ColladaFile
 		return vertexIndicesForFaces;
 	}
 
+	toStringXml()
+	{
+		var d = document;
+
+		// Camera.
+
+		// todo - More camera stuff.
+
+		var elementAspectRatio = d.createElement("aspect_ratio");
+		elementAspectRatio.innerHTML = "todo";
+
+		var elementXfov = d.createElement("xfov");
+		elementXfov.innerHTML = "[widthOfViewInDegreesAsString]";
+
+		var elementPerspective = d.createElement("perspective");
+		elementPerspective.appendChild(elementAspectRatio);
+		elementPerspective.appendChild(elementXfov);
+
+		var elementTechniqueCommon = d.createElement("technique_common");
+		elementTechniqueCommon.appendChild(elementPerspective);
+		var elementOptics = d.createElement("optics");
+		elementOptics.appendChild(elementTechniqueCommon);
+		var elementCamera = d.createElement("camera");
+		elementCamera.appendChild(elementOptics);
+		var elementLibraryCameras = d.createElement("library_cameras");
+		elementLibraryCameras.appendChild();
+
+		// Meshes.
+		var elementLibraryGeometries = d.createElement("library_geometries");
+
+		for (var m = 0; m < this.meshes.length; m++)
+		{
+			var elementGeometry = d.createElement("geometry");
+
+			// todo - Mesh.
+
+			elementLibraryGeometries.appendChild(elementGeometry);
+		}
+ 
+		// Scene.
+		var elementVisualScene = d.createElement("visual_scene");
+		elementVisualScene.appendChild(elementLibraryCameras);
+		elementVisualScene.appendChild(elementLibraryGeometries);
+
+		var elementLibraryVisualScenes =
+			d.createElement("library_visual_scenes");
+		elementLibraryVisualScenes.appendChild(elementVisualScene);
+
+		var elementCOLLADA = d.createElement("COLLADA");
+		elementCOLLADA.appendChild(elementLibraryVisualScenes);
+
+		var sceneAsStringXml = elementCOLLADA.outerHTML;
+
+		return sceneAsStringXml;
+	}
 }

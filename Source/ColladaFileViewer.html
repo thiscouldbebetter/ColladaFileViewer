@@ -8,12 +8,23 @@
 	<p>
 		Upload a file in Collada (.dae) format to view its contents.  Press
 		W, A, S, D and surrounding keys to move the camera around the
-		loaded scene.  Then click Save to re-save it.</p>
-	<input id="inputFileToLoad" type="file" onchange="inputFileToLoad_Changed(this);" />
-	<br />
-	<label>Scene:</label>
-	<div id="divOutput"></div>
-	
+		loaded scene.  Then click Save to re-save it.
+	</p>
+
+	<div>
+		<label>File to Load:</label>
+		<input id="inputFileToLoad" type="file" onchange="inputFileToLoad_Changed(this);" />
+	</div>
+
+	<div>
+		<label>Rendered Scene:</label>
+		<div id="divOutput">[none]</div>
+	</div>
+
+	<div>
+		<button onclick="buttonSave_Clicked();">Save to File</button>
+	</div>
+
 </div>
  
 <script src="Camera.js"></script>
@@ -35,7 +46,19 @@
 <script type="text/javascript">
  
 // ui events
- 
+
+function buttonSave_Clicked()
+{
+	var scene = Globals.Instance.scene;
+	var sceneAsStringXml = ColladaFile.sceneToStringXml(scene);
+
+	var sceneAsBlob = new Blob([sceneAsStringXml], {type:'text/xml'});
+	var downloadLink = document.createElement("a");
+	downloadLink.download = "Scene.dae";
+	downloadLink.href = window.URL.createObjectURL(sceneAsBlob);
+	downloadLink.click();
+}
+
 function inputFileToLoad_Changed(inputFileToLoad)
 {
 	var file = inputFileToLoad.files[0];

@@ -257,31 +257,27 @@ class ColladaFile
 	{
 		var vertices = [];
  
-		var xmlElementsSource = xmlElementGeometry.getElementsByTagName
+		var xmlElementsSource = ColladaFile.htmlCollectionToArray
 		(
-			"mesh"
-		)[0].getElementsByTagName
-		(
-			"source"
+			xmlElementGeometry.getElementsByTagName
+			(
+				"mesh"
+			)[0].getElementsByTagName
+			(
+				"source"
+			)
 		);
  
-		var geometryID = xmlElementGeometry.getAttribute("id");
-		var sourceIDForVertexPositions = geometryID + "-positions";
-		var xmlElementVertexPositions = null;
- 
-		for (var s = 0; s < xmlElementsSource.length; s++)
-		{
-			var xmlElementSource = xmlElementsSource[s];
-			var sourceID = xmlElementSource.getAttribute("id");
-			if (sourceID == sourceIDForVertexPositions)
-			{
-				xmlElementVertexPositions = xmlElementSource.getElementsByTagName
-				(
-					"float_array"
-				)[0];
-				break;
-			}
-		}
+		var geometryId = xmlElementGeometry.getAttribute("id");
+		var sourceIdForVertexPositions = geometryId + "-positions";
+
+		var xmlElementVertexPositions = xmlElementsSource.find
+		(
+			x => x.getAttribute("id") == sourceIdForVertexPositions
+		).getElementsByTagName
+		(
+			"float_array"
+		)[0];
  
 		var vertexPositionsAsString = xmlElementVertexPositions.innerHTML;
 		var vertexPositionsAsStrings = vertexPositionsAsString.split(" ");
@@ -434,13 +430,40 @@ class ColladaFile
 		return vertexIndicesForFaces;
 	}
 
-	toStringXml()
+	static sceneToStringXml(scene)
 	{
 		var d = document;
 
-		// Camera.
+		var elementLibraryCameras =
+			ColladaFile.sceneToStringXml_Camera(scene.camera);
 
-		// todo - More camera stuff.
+		var elementLibraryGeometries =
+			ColladaFile.sceneToStringXml_Meshes(scene.meshes);
+
+		// Scene.
+		var elementVisualScene = d.createElement("visual_scene");
+		elementVisualScene.appendChild(elementLibraryCameras);
+		elementVisualScene.appendChild(elementLibraryGeometries);
+
+		var elementLibraryVisualScenes =
+			d.createElement("library_visual_scenes");
+		elementLibraryVisualScenes.appendChild(elementVisualScene);
+
+		var elementCOLLADA = d.createElement("COLLADA");
+		elementCOLLADA.appendChild(elementLibraryVisualScenes);
+
+		var sceneAsStringXml = elementCOLLADA.outerHTML;
+
+		// todo - Format the XML more attractively.
+
+		return sceneAsStringXml;
+	}
+
+	static sceneToStringXml_Camera(camera)
+	{
+		var d = document;
+
+		// todo - More camera stuff;
 
 		var elementAspectRatio = d.createElement("aspect_ratio");
 		elementAspectRatio.innerHTML = "todo";
@@ -459,34 +482,29 @@ class ColladaFile
 		var elementCamera = d.createElement("camera");
 		elementCamera.appendChild(elementOptics);
 		var elementLibraryCameras = d.createElement("library_cameras");
-		elementLibraryCameras.appendChild();
+		elementLibraryCameras.appendChild(elementCamera);
 
-		// Meshes.
+		return elementLibraryCameras;
+	}
+
+	static sceneToStringXml_Meshes(meshes)
+	{
+		var d = document;
+
 		var elementLibraryGeometries = d.createElement("library_geometries");
 
-		for (var m = 0; m < this.meshes.length; m++)
+		for (var m = 0; m < meshes.length; m++)
 		{
+			var mesh = meshes[m];
+
 			var elementGeometry = d.createElement("geometry");
 
 			// todo - Mesh.
 
 			elementLibraryGeometries.appendChild(elementGeometry);
 		}
- 
-		// Scene.
-		var elementVisualScene = d.createElement("visual_scene");
-		elementVisualScene.appendChild(elementLibraryCameras);
-		elementVisualScene.appendChild(elementLibraryGeometries);
 
-		var elementLibraryVisualScenes =
-			d.createElement("library_visual_scenes");
-		elementLibraryVisualScenes.appendChild(elementVisualScene);
-
-		var elementCOLLADA = d.createElement("COLLADA");
-		elementCOLLADA.appendChild(elementLibraryVisualScenes);
-
-		var sceneAsStringXml = elementCOLLADA.outerHTML;
-
-		return sceneAsStringXml;
+		return elementLibraryGeometries;
 	}
+
 }

@@ -9,18 +9,12 @@ class ColladaFile
 			colladaFileAsStringXML, "text/xml"
 		);
  
-		var xmlElementRoot = xmlDocument.getElementsByTagName
-		(
-			"COLLADA"
-		)[0];
+		var xmlElementRoot =
+			xmlDocument.getElementsByTagName("COLLADA")[0];
  
-		var xmlElementVisualScene = xmlDocument.getElementsByTagName
-		(
-			"library_visual_scenes"
-		)[0].getElementsByTagName
-		(
-			"visual_scene"
-		)[0];
+		var xmlElementVisualScene =
+			xmlDocument.getElementsByTagName("library_visual_scenes")[0]
+			.getElementsByTagName("visual_scene")[0];
  
 		var camera = ColladaFile.sceneFromStringXML_Camera
 		(
@@ -45,22 +39,13 @@ class ColladaFile
 		xmlElementVisualScene
 	)
 	{
-		var xmlElementCameraPerspective = xmlElementRoot.getElementsByTagName
-		(
-			"library_cameras"
-		)[0].getElementsByTagName
-		(
-			"camera"
-		)[0].getElementsByTagName
-		(
-			"optics"
-		)[0].getElementsByTagName
-		(
-			"technique_common"
-		)[0].getElementsByTagName
-		(
-			"perspective"
-		)[0];
+		var xmlElementCameraPerspective =
+			xmlElementRoot
+				.getElementsByTagName("library_cameras")[0]
+				.getElementsByTagName("camera")[0]
+				.getElementsByTagName("optics")[0]
+				.getElementsByTagName("technique_common")[0]
+				.getElementsByTagName("perspective")[0];
  
 		var cameraViewSize = new Coords(200, 200, 0);
  
@@ -101,10 +86,8 @@ class ColladaFile
 			}
 		}
  
-		var matrixForCameraTransformAsStrings = xmlElementCamera.getElementsByTagName
-		(
-			"matrix"
-		)[0].innerHTML.split(" ");
+		var matrixForCameraTransformAsStrings =
+			xmlElementCamera.getElementsByTagName("matrix")[0].innerHTML.split(" ");
 		var matrixForCameraTransformAsNumbers = [];
 		for (var i = 0; i < matrixForCameraTransformAsStrings.length; i++)
 		{
@@ -167,13 +150,10 @@ class ColladaFile
 	{
 		var meshes = [];
  
-		var xmlElementsGeometry = xmlElementRoot.getElementsByTagName
-		(
-			"library_geometries"
-		)[0].getElementsByTagName
-		(
-			"geometry"
-		);
+		var xmlElementsGeometry =
+			xmlElementRoot
+				.getElementsByTagName("library_geometries")[0]
+				.getElementsByTagName("geometry");
  
 		for (var g = 0; g < xmlElementsGeometry.length; g++)
 		{
@@ -184,10 +164,8 @@ class ColladaFile
 				xmlElementGeometry
 			);
  
-			var xmlElementsVisualSceneNode = xmlElementVisualScene.getElementsByTagName
-			(
-				"node"
-			);
+			var xmlElementsVisualSceneNode =
+				xmlElementVisualScene.getElementsByTagName("node");
  
 			var xmlElementNodeForMesh = null;
  
@@ -204,10 +182,9 @@ class ColladaFile
 				}
 			}
  
-			var matrixValuesAsStrings = xmlElementNodeForMesh.getElementsByTagName
-			(
-				"matrix"
-			)[0].innerHTML.split(" ");
+			var matrixValuesAsStrings =
+				xmlElementNodeForMesh
+					.getElementsByTagName("matrix")[0].innerHTML.split(" ");
 			var matrixValues = [];
 			for (var mv = 0; mv < matrixValuesAsStrings.length; mv++)
 			{
@@ -267,13 +244,9 @@ class ColladaFile
 	{
 		var vertices = [];
  
-		var xmlElementsSource = xmlElementGeometry.getElementsByTagName
-		(
-			"mesh"
-		)[0].getElementsByTagName
-		(
-			"source"
-		);
+		var xmlElementsSource =
+			xmlElementGeometry.getElementsByTagName("mesh")[0]
+			.getElementsByTagName("source");
  
 		var geometryID = xmlElementGeometry.getAttribute("id");
 		var sourceIDForVertexPositions = geometryID + "-positions";
@@ -285,10 +258,8 @@ class ColladaFile
 			var sourceID = xmlElementSource.getAttribute("id");
 			if (sourceID == sourceIDForVertexPositions)
 			{
-				xmlElementVertexPositions = xmlElementSource.getElementsByTagName
-				(
-					"float_array"
-				)[0];
+				xmlElementVertexPositions =
+					xmlElementSource.getElementsByTagName("float_array")[0];
 				break;
 			}
 		}
@@ -322,15 +293,11 @@ class ColladaFile
 			return htmlCollectionAsArray;
 		};
 
-		var xmlElementMesh = xmlElementGeometry.getElementsByTagName
-		(
-			"mesh"
-		)[0];
+		var xmlElementMesh =
+			xmlElementGeometry.getElementsByTagName("mesh")[0];
 
-		var xmlElementVertices = xmlElementMesh.getElementsByTagName
-		(
-			"vertices"
-		)[0];
+		var xmlElementVertices =
+			xmlElementMesh.getElementsByTagName("vertices")[0];
 
 		var xmlElementSourceVertexPositionsId = htmlCollectionToArray
 		(
@@ -346,22 +313,17 @@ class ColladaFile
 		xmlElementSourceVertexPositionsId =
 			xmlElementSourceVertexPositionsId.substring(1);
 
-		var vertexCoordinates = htmlCollectionToArray
+		var sourceElements = htmlCollectionToArray
 		(
-			xmlElementMesh.getElementsByTagName
-			(
-				"source"
-			)
-		).filter
-		(
-			x => x.id == xmlElementSourceVertexPositionsId
-		)[0].getElementsByTagName
-		(
-			"float_array"
-		)[0].innerHTML.split(" ").map
-		(
-			x => parseFloat(x)
-		);
+			xmlElementMesh.getElementsByTagName("source")
+		)
+		
+		var vertexCoordinates =
+			sourceElements
+				.find(x => x.id == xmlElementSourceVertexPositionsId)
+				.getElementsByTagName("float_array")[0].innerHTML
+				.split(" ")
+				.map(x => parseFloat(x) );
  
 		var vertexPositions = [];
 		var numberOfDimensions = 3;
@@ -377,18 +339,13 @@ class ColladaFile
 			vertexPositions.push(vertexPos);
 		}
 
-		var xmlElementTriangles = xmlElementMesh.getElementsByTagName
-		(
-			"triangles"
-		)[0];
+		var xmlElementTriangles =
+			xmlElementMesh.getElementsByTagName("triangles")[0];
 
 		var xmlElementTrianglesInputs =
 			htmlCollectionToArray
 			(
-				xmlElementTriangles.getElementsByTagName
-				(
-					"input"
-				)
+				xmlElementTriangles.getElementsByTagName("input")
 			);
 
 		var numberOfInterleavedDataStreams =
@@ -396,23 +353,17 @@ class ColladaFile
 
 		var offsetOfDataStreamForFaceVertexIndices = parseInt
 		(
-			xmlElementTrianglesInputs.filter
-			(
-				x => x.getAttribute("semantic") == "VERTEX"
-			)[0].getAttribute
-			(
-				"offset"
-			)
+			xmlElementTrianglesInputs
+				.find(x => x.getAttribute("semantic") == "VERTEX")
+				.getAttribute("offset")
 		);
 
 		var dataStreamsForTrianglesInterleaved =
-			xmlElementTriangles.getElementsByTagName
-			(
-				"p"
-			)[0].innerHTML.split(" ").map
-			(
-				x => parseInt(x)
-			);
+			xmlElementTriangles
+				.getElementsByTagName("p")[0]
+				.innerHTML
+				.split(" ")
+				.map(x => parseInt(x) );
 
 		var verticesPerTriangle = 3;
 		var numberOfDataPoints = dataStreamsForTrianglesInterleaved.length;

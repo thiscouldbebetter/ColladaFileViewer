@@ -8,6 +8,16 @@ class Coords
 		this.z = z;
 	}
 
+	static fromXY(x, y)
+	{
+		return new Coords(x, y, 0);
+	}
+
+	static fromXYZ(x, y, z)
+	{
+		return new Coords(x, y, z);
+	}
+
 	add(other)
 	{
 		this.x += other.x;

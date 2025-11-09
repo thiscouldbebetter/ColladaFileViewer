@@ -26,9 +26,9 @@ class ColladaFile
 		(
 			xmlElementRoot,
 			xmlElementVisualScene
-		);	  
+		);
  
-		var scene = new Scene(camera, meshes);
+		var scene = Scene.fromCameraAndMeshes(camera, meshes);
  
 		return scene;
 	}
@@ -47,19 +47,19 @@ class ColladaFile
 				.getElementsByTagName("technique_common")[0]
 				.getElementsByTagName("perspective")[0];
  
-		var cameraViewSize = new Coords(200, 200, 0);
+		var cameraViewSize = Coords.fromXY(200, 200);
  
-		var aspectRatioAsString = xmlElementCameraPerspective.getElementsByTagName
-		(
-			"aspect_ratio"
-		)[0].innerHTML;
+		var aspectRatioAsString =
+			xmlElementCameraPerspective
+				.getElementsByTagName("aspect_ratio")[0]
+				.innerHTML;
 		var aspectRatio = parseFloat(aspectRatioAsString);
 		cameraViewSize.x *= aspectRatio;
  
-		var widthOfViewInDegreesAsString = xmlElementCameraPerspective.getElementsByTagName
-		(
-			"xfov"
-		)[0].innerHTML;
+		var widthOfViewInDegreesAsString =
+			xmlElementCameraPerspective
+				.getElementsByTagName("xfov")[0]
+				.innerHTML;
 		var widthOfViewInDegrees = parseFloat(widthOfViewInDegreesAsString);
 		var radiansPerDegree = 2 * Math.PI / 360;
 		var widthOfViewInRadians = widthOfViewInDegrees * radiansPerDegree;
@@ -68,10 +68,8 @@ class ColladaFile
 			Math.cos(widthOfViewInRadiansHalf)
 			* cameraViewSize.x / 2;
  
-		var xmlElementsVisualSceneNode = xmlElementVisualScene.getElementsByTagName
-		(
-			"node"
-		);
+		var xmlElementsVisualSceneNode =
+			xmlElementVisualScene.getElementsByTagName("node");
  
 		var xmlElementCamera = null;
  
@@ -87,20 +85,24 @@ class ColladaFile
 		}
  
 		var matrixForCameraTransformAsStrings =
-			xmlElementCamera.getElementsByTagName("matrix")[0].innerHTML.split(" ");
+			xmlElementCamera
+				.getElementsByTagName("matrix")[0]
+				.innerHTML
+				.split(" ");
+
 		var matrixForCameraTransformAsNumbers = [];
 		for (var i = 0; i < matrixForCameraTransformAsStrings.length; i++)
 		{
 			var valueAsString = matrixForCameraTransformAsStrings[i];
 			matrixForCameraTransformAsNumbers[i] = parseFloat(valueAsString);
 		}
-		var matrixForCameraTransform = new Matrix
+		var matrixForCameraTransform = Matrix.fromSizeAndValues
 		(
-			new Coords(4, 4), // size
+			Coords.fromXY(4, 4), // size
 			matrixForCameraTransformAsNumbers
 		).transpose();
  
-		var cameraPos = new Coords
+		var cameraPos = Coords.fromXYZ
 		(
 			matrixForCameraTransform.values[3],
 			matrixForCameraTransform.values[7],
@@ -109,29 +111,27 @@ class ColladaFile
  
 		var cameraForwardAndDown =
 		[
-			new Coords(0, 0, -1),
-			new Coords(0, -1, 0)
+			Coords.fromXYZ(0, 0, -1),
+			Coords.fromXYZ(0, -1, 0)
 		];
  
 		for (var i = 0; i < cameraForwardAndDown.length; i++)
 		{
 			var coordsToTransform = cameraForwardAndDown[i];
-			var matrixToTransform = Matrix.fromCoords
-			(
-				coordsToTransform
-			);
+			var matrixToTransform =
+				Matrix.fromCoords(coordsToTransform);
 			var matrixTransformed = matrixForCameraTransform.multiply(matrixToTransform);
 			var coordsTransformed = matrixTransformed.toCoords();
 			coordsToTransform.overwriteWith(coordsTransformed);
 		}
  
-		var cameraOrientation = new Orientation
+		var cameraOrientation = Orientation.fromForwardAndDown
 		(
 			cameraForwardAndDown[0],
 			cameraForwardAndDown[1]
 		);
  
-		var camera = new Camera
+		var camera = Camera.fromViewSizeFocalLengthPosAndOri
 		(
 			cameraViewSize,
 			cameraFocalLength,
@@ -192,21 +192,20 @@ class ColladaFile
 				var matrixValue = parseFloat(matrixValueAsString);
 				matrixValues.push(matrixValue);
 			}
-			var matrix = new Matrix
+			var matrix = Matrix.fromSizeAndValues
 			(
 				new Coords(4, 4), // size
 				matrixValues
 			).transpose();
-			var meshPos = new Coords
+
+			var meshPos = Coords.fromXYZ
 			(
 				matrixValues[3],
 				matrixValues[7],
 				matrixValues[11]
 			);
-			var transformTranslate = new Transform_Translate
-			(
-				meshPos
-			);
+			var transformTranslate =
+				Transform_Translate.fromDisplacement(meshPos);
 			Transform.applyTransformToMesh(transformTranslate, mesh);
 			// todo - Rotation.
  
@@ -218,19 +217,22 @@ class ColladaFile
  
 	static sceneFromStringXML_Meshes_Geometry(xmlElementGeometry)
 	{
-		var meshName = xmlElementGeometry.getAttribute("name");
+		var meshName =
+			xmlElementGeometry.getAttribute("name");
  
-		var vertices = ColladaFile.sceneFromStringXML_Meshes_Geometry_Vertices
-		(
-			xmlElementGeometry
-		);
+		var vertices =
+			ColladaFile.sceneFromStringXML_Meshes_Geometry_Vertices
+			(
+				xmlElementGeometry
+			);
  
-		var vertexIndicesForFaces = ColladaFile.sceneFromStringXML_Meshes_Geometry_Faces
-		(
-			xmlElementGeometry
-		);
+		var vertexIndicesForFaces =
+			ColladaFile.sceneFromStringXML_Meshes_Geometry_Faces
+			(
+				xmlElementGeometry
+			);
  
-		var mesh = new Mesh
+		var mesh = Mesh.fromNameVerticesAndVertexIndicesForFaces
 		(
 			meshName,
 			vertices,
@@ -265,18 +267,22 @@ class ColladaFile
 		}
  
 		var vertexPositionsAsString = xmlElementVertexPositions.innerHTML;
-		var vertexPositionsAsStrings = vertexPositionsAsString.split(" ");
+		var vertexPositionsAsStrings =
+			vertexPositionsAsString.split(" ");
+		var vertexPositionsAsFloats =
+			vertexPositionsAsStrings
+				.map(x => parseFloat(x) );
  
-		for (var i = 0; i < vertexPositionsAsStrings.length; i += 3)
+		for (var i = 0; i < vertexPositionsAsFloats.length; i += 3)
 		{
-			var vertexPos = new Coords
+			var vertexPos = Coords.fromXYZ
 			(
-				parseFloat(vertexPositionsAsStrings[i]),
-				parseFloat(vertexPositionsAsStrings[i + 1]),
-				parseFloat(vertexPositionsAsStrings[i + 2])
+				vertexPositionsAsFloats[i],
+				vertexPositionsAsFloats[i + 1],
+				vertexPositionsAsFloats[i + 2]
 			);
  
-			var vertex = new Vertex(vertexPos);
+			var vertex = Vertex.fromPos(vertexPos);
  
 			vertices.push(vertex);
 		}
@@ -299,16 +305,16 @@ class ColladaFile
 		var xmlElementVertices =
 			xmlElementMesh.getElementsByTagName("vertices")[0];
 
-		var xmlElementSourceVertexPositionsId = htmlCollectionToArray
-		(
-			xmlElementVertices.getElementsByTagName("input")
-		).filter
-		(
-			x => x.getAttribute("semantic") == "POSITION"
-		)[0].getAttribute
-		(
-			"source"
-		);
+		var inputsAsArray =
+			htmlCollectionToArray
+			(
+				xmlElementVertices.getElementsByTagName("input")
+			)
+
+		var xmlElementSourceVertexPositionsId =
+			inputsAsArray
+				.find(x => x.getAttribute("semantic") == "POSITION")
+				.getAttribute("source");
 
 		xmlElementSourceVertexPositionsId =
 			xmlElementSourceVertexPositionsId.substring(1);
@@ -329,7 +335,7 @@ class ColladaFile
 		var numberOfDimensions = 3;
 		for (var i = 0; i < vertexCoordinates.length; i += numberOfDimensions)
 		{
-			var vertexPos = new Coords
+			var vertexPos = Coords.fromXYZ
 			(
 				vertexCoordinates[i],
 				vertexCoordinates[i + 1],

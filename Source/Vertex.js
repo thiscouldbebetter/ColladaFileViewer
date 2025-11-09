@@ -8,6 +8,11 @@ class Vertex
 		this.faceIndices = [];
 	}
 
+	static fromPos(pos)
+	{
+		return new Vertex(pos);
+	}
+
 	static manyFromPositions(positions)
 	{
 		var returnValues = [];

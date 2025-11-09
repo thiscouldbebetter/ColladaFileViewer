@@ -9,6 +9,11 @@ class Orientation
 		this.orthogonalizeAxes();
 	}
 
+	static fromForwardAndDown(forward, down)
+	{
+		return new Orientation(forward, down);
+	}
+
 	orthogonalizeAxes()
 	{
 		this.right.overwriteWith

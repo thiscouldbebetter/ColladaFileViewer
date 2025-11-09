@@ -22,6 +22,11 @@ class Matrix
 			]
 		);
 	}
+
+	static fromSizeAndValues(size, values)
+	{
+		return new Matrix(size, values);
+	}
  
 	// instance methods
  

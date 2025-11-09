@@ -11,6 +11,11 @@ class Camera
 		this.viewSizeHalf = this.viewSize.clone().divideScalar(2);
 	}
 
+	static fromViewSizeFocalLengthPosAndOri(viewSize, focalLength, pos, ori)
+	{
+		return new Camera(viewSize, focalLength, pos, ori);
+	}
+
 	transformWorldToViewCoords(coordsToTransform)
 	{
 		coordsToTransform.subtract
